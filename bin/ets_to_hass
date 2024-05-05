@@ -33,7 +33,7 @@ opts = GetoptLong.new(
   ['--trace', '-t', GetoptLong::REQUIRED_ARGUMENT],
   ['--output', '-o', GetoptLong::REQUIRED_ARGUMENT],
   ['--password', '-p', GetoptLong::REQUIRED_ARGUMENT],
-  ['--comment-skipped', '-c', GetoptLong::REQUIRED_ARGUMENT]
+  ['--comment-skipped', '-c', GetoptLong::NO_ARGUMENT]
 )
 
 options = {}

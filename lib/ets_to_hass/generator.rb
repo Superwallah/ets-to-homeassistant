@@ -27,7 +27,8 @@ module EtsToHass
     ETS_FUNCTIONS_INDEX_TO_NAME =
       %i[custom switchable_light dimmable_light sun_protection heating_radiator heating_floor
          dimmable_light sun_protection heating_switching_variable heating_continuous_variable].freeze
-    private_constant :ETS_EXT, :ETS_FUNCTIONS_INDEX_TO_NAME
+    NOT_IMPLEMENTED = 'not_implemented'
+    private_constant :ETS_EXT, :ETS_FUNCTIONS_INDEX_TO_NAME, :NOT_IMPLEMENTED
 
     # class methods
     class << self
@@ -247,9 +248,9 @@ module EtsToHass
       when :sun_protection then 'cover'
       when :custom, :heating_continuous_variable, :heating_floor, :heating_radiator, :heating_switching_variable
         @logger.warn("#{ets_func[:room].red} #{ets_func[:name].green} function type #{ets_func[:type].to_s.blue} not implemented")
-        nil
+        NOT_IMPLEMENTED
       else @logger.error("#{ets_func[:room].red} #{ets_func[:name].green} function type #{ets_func[:type].to_s.blue} not supported, please report")
-           nil
+           NOT_IMPLEMENTED
       end
     end
 
@@ -341,16 +342,14 @@ module EtsToHass
         next unless ga_object_ids(ga_id).empty?
         ga_data = group_address_data(ga_id)
         warning(ga_data[:address], ga_data[:name], 'Group not in object: use ETS to create functions or use specific code')
+        add_comment("#{ga_data[:address]}: #{ga_data[:name]}") if @opts[:comment_skipped]
       end
       # Generate devices from either functions in ETS, or from specific code
       all_object_ids.each do |object_id|
         ets_object = object(object_id)
         # compute object domain, this is the section in HA configuration (switch, light, etc...)
         ha_object_domain = ets_object[:ha].delete(:domain) || map_ets_function_to_ha_object_category(ets_object)
-        if ha_object_domain.nil?
-          warning(ets_object[:name], ets_object[:room], "#{ets_object[:type].to_s.blue}: function type not detected, skipping")
-          next
-        end
+        warning(ets_object[:name], ets_object[:room], "#{ets_object[:type].to_s.blue}: function type not mapped, skipping") if ha_object_domain.eql?(NOT_IMPLEMENTED)
         # add domain to config, if necessary
         ha_config[ha_object_domain] ||= []
         # HA configuration object, either empty or initialized in specific code
@@ -391,6 +390,10 @@ module EtsToHass
       if @opts[:sort_by_name]
         @logger.info('Sorting by name')
         ha_config.each_value { |v| v.sort_by! { |o| o['name'] } }
+      end
+      # remove not implemented objects
+      ha_config.delete(NOT_IMPLEMENTED)&.each do |o|
+        add_comment("#{o}") if @opts[:comment_skipped]
       end
       # add knx level, if user asks for it
       ha_config = { 'knx' => ha_config } if @opts[:ha_knx]
