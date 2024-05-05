@@ -5,3 +5,6 @@ xmlsimple
 getoptlong
 gemdir
 chdir
+bindir
+unshift
+fileutils

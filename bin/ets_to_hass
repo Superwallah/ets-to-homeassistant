@@ -31,7 +31,9 @@ opts = GetoptLong.new(
   ['--fix', '-s', GetoptLong::REQUIRED_ARGUMENT],
   ['--addr', '-a', GetoptLong::REQUIRED_ARGUMENT],
   ['--trace', '-t', GetoptLong::REQUIRED_ARGUMENT],
-  ['--output', '-o', GetoptLong::REQUIRED_ARGUMENT]
+  ['--output', '-o', GetoptLong::REQUIRED_ARGUMENT],
+  ['--password', '-p', GetoptLong::REQUIRED_ARGUMENT],
+  ['--comment-skipped', '-c', GetoptLong::REQUIRED_ARGUMENT]
 )
 
 options = {}
@@ -67,7 +69,10 @@ opts.each do |opt, arg|
             one of debug, info, warn, error
 
           --output [file]
-            add room name in object name
+          add room name in object name
+
+          --password [password]
+          Password for encrypted ETS project file (not yet implemented)
     END_OF_MANUAL
     Process.exit(1)
   when '--fix'
@@ -81,12 +86,16 @@ opts.each do |opt, arg|
     options[:sort_by_name] = true
   when '--full-name'
     options[:full_name] = true
+  when '--comment-skipped'
+    options[:comment_skipped] = true
   when '--trace'
     options[:trace] = arg
   when '--addr'
     options[:addr] = arg
   when '--output'
     options[:output] = arg
+  when '--password'
+    options[:password] = arg
   else
     raise "Unknown option #{opt}"
   end
@@ -109,3 +118,4 @@ project_file_path = ARGV.shift
 generator = EtsToHass::Generator.new(project_file_path, options)
 # generate result (e.g. call generate_homeass)
 output_file.write(generator.send(:"#{GENE_PREFIX}#{output_format}"))
+puts "Generated #{output_format} file: #{output_file.path}" unless options[:output].nil?

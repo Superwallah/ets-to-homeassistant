@@ -72,11 +72,11 @@ Refer to [Custom method](#custom-method)
     gem install ets-to-homeassistant
     ```
 
-3. Test it works:
+3. Test that it works:
   
-      ```bash
-      ets_to_hass --help
-      ```
+    ```bash
+    ets_to_hass --help
+    ```
 
 ## Usage
 
@@ -107,10 +107,11 @@ Usage: .ets_to_hass [options] <ets project file>.knxproj
       one of Free, TwoLevel, ThreeLevel
 
     --trace [trace]
-      one of debug, info, warn, error
+      one of debug, info, warn, error. Default: info
 
     --output [file]
-      add room name in object name```
+      add room name in object name
+```
 
 For example to generate the home assistant KNX configuration from the exported ETS project: `myexport.knxproj`
 
