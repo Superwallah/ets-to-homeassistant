@@ -218,7 +218,14 @@ module EtsToHass
       case group_address[:datapoint]
       when '1.001' then 'address' # switch on/off or state
       when '1.008' then 'move_long_address' # up/down
-      when '1.010' then 'stop_address' # stop
+      when '1.010' 
+        case ha_object_domain
+        when 'light' then 'address' # start for staircase function
+        when 'cover' then 'stop_address' # stop for blind movement
+        else
+          warning(group_address[:address], group_address[:name], "#{group_address[:datapoint]} expects: light or cover, not #{ha_object_domain.magenta}")
+          nil
+        end
       when '1.011' then 'state_address' # switch state
       when '3.007'
         @logger.debug("#{group_address[:address]}(#{ha_object_domain}:#{group_address[:datapoint]}:#{group_address[:name]}): ignoring datapoint")
